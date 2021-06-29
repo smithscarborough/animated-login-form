@@ -1,4 +1,22 @@
 <script>
+	// with svelte, anytime the strength or validations values changes, the component will re-render to display the latest values:
+	let strength = 0;
+	let validations = [];
+	let showPassword = false;
+
+	function validatePassword(e) {
+		const password = e.target.value;
+
+		validations = [
+			(password.length > 5),
+			// REGEX search -> if no capital letters from A-Z are present, -1 will be returned:
+			(password.search(/[A-Z]/) > -1),
+			(password.search(/[0-9]/) > -1),
+			(password.search(/[$&+,:;=?@#]/) > -1)
+		]
+
+		strength = validations.reduce((acc, cur) => acc + cur)
+	}
 
 </script>
 
@@ -112,6 +130,14 @@
 		background: linear-gradient(to right, yellowgreen, green);
 	}
 
+	.toggle-password {
+		position: absolute;
+		cursor: help;
+		font-size: 0.8rem;
+		right: 0.25rem;
+		bottom: 0.5rem;
+	}
+
 </style>
 
 <main>
@@ -124,22 +150,29 @@
 		</div>
 
 		<div class="field">
-			<input type="password" class="input" placeholder="" />
+			<input type={showPassword ? "text" : "password"} class="input" placeholder="" on:input={validatePassword} />
 			<label for="password" class="label">Password</label>
+		
+			<span
+				class="toggle-password"
+				on:mouseenter={() => (showPassword = true)}
+				on:mouseleave={() => (showPassword = false)}>
+				{showPassword ? '🙈' : '👁'}
+			</span>
 		</div>
 
 		<div class="strength">
-			<span class="bar bar-1" />
-			<span class="bar bar-2" />
-			<span class="bar bar-3" />
-			<span class="bar bar-4" />
+			<span class="bar bar-1" class:bar-show={strength > 0} />
+			<span class="bar bar-2" class:bar-show={strength > 1} />
+			<span class="bar bar-3" class:bar-show={strength > 2} />
+			<span class="bar bar-4" class:bar-show={strength > 3} />
 		</div>
 
 		<ul>
-			<li> must be at least 5 characters</li>
-			<li> must contain a capital letter</li>
-			<li> must contain a number</li>
-			<li> must contain one of $&+,:;=?@#</li>
+			<li> {validations[0] ? '✅' : '❌'} must be at least 5 characters</li>
+			<li> {validations[1] ? '✅' : '❌'} must contain a capital letter</li>
+			<li> {validations[2] ? '✅' : '❌'} must contain a number</li>
+			<li> {validations[3] ? '✅' : '❌'} must contain one of $&+,:;=?@#</li>
 		</ul>
 
 
